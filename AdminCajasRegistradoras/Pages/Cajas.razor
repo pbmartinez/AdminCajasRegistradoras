@@ -1,0 +1,24 @@
+﻿@page "/cajas"
+@using AdminCajasRegistradoras.Models
+
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+
+@if(Cajas == null)
+{
+    
+}
+else
+{
+    
+}
+
+@code
+{
+    private List<Caja> Cajas;
+
+    protected override void OnInitialized()
+    {
+        Cajas = db.Cajas.ToList();
+    }
+
+}
