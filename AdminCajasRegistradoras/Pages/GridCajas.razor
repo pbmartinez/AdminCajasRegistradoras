@@ -1,0 +1,191 @@
+﻿@page "/cajas"
+
+@using AdminCajasRegistradoras.Models
+@using AdminCajasRegistradoras.DataAnnotations
+@using System.ComponentModel.DataAnnotations
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+
+<MudText Typo="Typo.h3" GutterBottom="true">Cajas Registradoras</MudText>
+<MudText Class="mb-8">This component shows a list of registered boxes.</MudText>
+
+
+<br />
+<MudCard Elevation="2">
+    @if (Cajas == null)
+    {
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+    }
+    else
+    {
+
+        <MudTable Items="Cajas" Hover="true" SortLabel="Sort By" Elevation="0" MultiSelection="true" Dense="true"
+              Filter="new Func<Caja,bool>(FilterFunc1)">
+            <ToolBarContent>
+                <MudTooltip Text="Adicionar lista de excel">
+                    <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.AddBox" Color=Color.Inherit></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="Adicionar">
+                    <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.Add" Color=Color.Inherit></MudIconButton>
+                </MudTooltip>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Buscar ..."
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                          Class="mt-0"></MudTextField>
+
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Caja, object>(x=>x.Nombre)">Nombre</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Numero)">Numero</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Ip)">Ip</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Puerto)">Puerto</MudTableSortLabel></MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
+                <MudTd DataLabel="Numero">@context.Numero</MudTd>
+                <MudTd DataLabel="Ip">@context.Ip</MudTd>
+                <MudTd DataLabel="Puerto">@context.Puerto</MudTd>
+                <MudTd DataLabel="">
+                    <MudMenu Label="Lectura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
+                        <MudMenuItem>Cajero</MudMenuItem>
+                        <MudMenuItem>PLUS</MudMenuItem>
+                        <MudMenuItem>Modificadores</MudMenuItem>
+                        <MudMenuItem>Tasa</MudMenuItem>
+                    </MudMenu>
+                    <MudMenu Label="Escritura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
+                        <MudMenuItem>Cajero</MudMenuItem>
+                        <MudMenuItem>PLUS</MudMenuItem>
+                        <MudMenuItem>Modificadores</MudMenuItem>
+                        <MudMenuItem>Tasa</MudMenuItem>
+                    </MudMenu>
+                    <MudTooltip Text="Editar">
+                        <MudFab @onclick="@(()=>Edit(context.Id))" Color=Color.Primary Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudFab @onclick="@(()=>Show(context.Id, context.Nombre))" Color=Color.Secondary Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+            </PagerContent>
+        </MudTable>
+    }
+</MudCard>
+
+<MudDialog @bind-IsVisible="visible" >
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3"/> Eliminar caja
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <p>@($"Está seguro que quiere eliminar la caja {nombreCajaToRemove} ?")</p>        
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel" Class="px-10">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="()=>Delete(idToRemove)" Class="px-10">Eliminar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    private bool visible = false;
+    private bool success = false;
+    private Guid idToRemove = Guid.Empty;
+    private string nombreCajaToRemove = string.Empty;
+    private Caja cajaToSave = new Caja();
+    private List<Caja> Cajas;
+    private IDialogReference dialogReference;
+    private string searchString;
+    private void UpdateCajas()
+    {
+        Cajas = db.Cajas.ToList();
+        success = false;
+    }
+    private void OnSuccessfullySave()
+    {
+        if (dialogReference != null)
+            dialogReference.Close();
+        UpdateCajas();
+        StateHasChanged();
+    }
+    protected override void OnInitialized()
+    {
+        UpdateCajas();
+    }
+    void Cancel() 
+    {
+        idToRemove = Guid.Empty;
+        nombreCajaToRemove = string.Empty;
+        visible = false; 
+    }
+    void Show(Guid id, string name) 
+    {
+        idToRemove = id; 
+        visible = true;
+        nombreCajaToRemove = name;
+    }
+    private void Add()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("cajaToSave", new Caja());
+        parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
+        dialogReference = Dialog.Show<AddModifyCajas>("Adicionar Caja", parameters);
+    }
+    private void Edit(Guid id)
+    {
+        var caja = db.Cajas.FirstOrDefault(c => c.Id == id);
+        if (caja == null)
+        {
+            Snackbar.Add($"La caja con id {id} que intenta editar no existe", Severity.Warning);
+        }
+        else
+        {
+            cajaToSave = caja;
+            var parameters = new DialogParameters();
+            parameters.Add("cajaToSave", cajaToSave);
+            parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
+            dialogReference = Dialog.Show<AddModifyCajas>("Editar Caja", parameters);
+        }
+    }
+    private void Delete(Guid id)
+    {
+        var caja = db.Cajas.FirstOrDefault(c => c.Id == id);
+        if (caja == null)
+        {
+            Snackbar.Add($"La caja con id {id} que intenta editar no existe", Severity.Warning);
+        }
+        else
+        {
+            db.Cajas.Remove(caja);
+            db.SaveChanges();
+            UpdateCajas();
+            Snackbar.Add($"La caja ha sido eliminada satisfactoriamente", Severity.Success);
+            Cancel();
+        }
+    }
+
+    private bool FilterFunc1(Caja item) => FilterFunc(item, searchString);
+
+    private bool FilterFunc(Caja item, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString) || string.IsNullOrEmpty(searchString))
+            return true;
+        if (item.Nombre.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ((item.Numero + "").Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (item.Ip.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ((item.Puerto + "").Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{item.Nombre} {item.Numero} {item.Ip} {item.Puerto}".Contains(searchString))
+            return true;
+        return false;
+    }
+}
