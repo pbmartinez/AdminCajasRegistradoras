@@ -11,36 +11,52 @@
     </MudCardHeader>
     <MudCardContent>
         <MudForm @bind-IsValid="@success">
-            <MudTextField @bind-Value=item.Nombre Disabled=(!EditMode) Label="@ConfiguracionEncabezado.NombreName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.NombreName} ...")"
-                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.NombreName} es requerido")">
-            </MudTextField>
-            <MudNumericField @bind-Value=item.ClearLog Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ClearLogName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ClearLogName} ...")"
-                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.ClearLogName} es requerido")">
-            </MudNumericField>
+            <MudGrid>
+                <MudItem xs="6" sm="4">
+                    <MudTextField @bind-Value=item.Nombre Disabled=(!EditMode) Label="@ConfiguracionEncabezado.NombreName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.NombreName} ...")"
+                                  Required="true" RequiredError="@($"{ConfiguracionEncabezado.NombreName} es requerido")">
+                    </MudTextField>
+                </MudItem>
 
-            <MudNumericField @bind-Value=item.EndFile Disabled=(!EditMode) Label="@ConfiguracionEncabezado.EndFileName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.EndFileName} ...")" 
-                             Required="true" RequiredError="@($"{ConfiguracionEncabezado.EndFileName} es requerido")">
-            </MudNumericField>
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.ClearLog Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ClearLogName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ClearLogName} ...")"
+                                     Required="true" RequiredError="@($"{ConfiguracionEncabezado.ClearLogName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.EndFile Disabled=(!EditMode) Label="@ConfiguracionEncabezado.EndFileName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.EndFileName} ...")"
+                                     Required="true" RequiredError="@($"{ConfiguracionEncabezado.EndFileName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
 
-            <MudNumericField @bind-Value=item.Abort Disabled=(!EditMode) Label="@ConfiguracionEncabezado.AbortName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.AbortName} ...")"
-                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.AbortName} es requerido")">
-            </MudNumericField>
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Abort Disabled=(!EditMode) Label="@ConfiguracionEncabezado.AbortName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.AbortName} ...")"
+                                     Required="true" RequiredError="@($"{ConfiguracionEncabezado.AbortName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
 
-            <MudNumericField @bind-Value=item.Result Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ResultName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")"
-                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.ResultName} es requerido")">
-            </MudNumericField>
-                        
-            <MudNumericField @bind-Value=item.BaudRate Disabled=(!EditMode) Label="@ConfiguracionEncabezado.BaudRateName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")">
-            </MudNumericField>
-                        
-            <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@ConfiguracionEncabezado.PuertoName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.PuertoName} ...")">
-            </MudNumericField>
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Result Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ResultName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")"
+                                     Required="true" RequiredError="@($"{ConfiguracionEncabezado.ResultName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
 
-            <MudSwitch @bind-Checked="@item.Activa" Disabled=(!EditMode) Label="Activa" Color=Color.Info></MudSwitch>
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.BaudRate Disabled=(!EditMode) Label="@ConfiguracionEncabezado.BaudRateName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")">
+                    </MudNumericField>
+                </MudItem>
 
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@ConfiguracionEncabezado.PuertoName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.PuertoName} ...")">
+                    </MudNumericField>
+                </MudItem>
+                <MudItem xs="6" sm="4">
+                    <MudSwitch @bind-Checked="@item.Activa" Disabled=(!EditMode) Label="Activa" Color=Color.Info></MudSwitch>
+                </MudItem>
+            </MudGrid>
             <br />
-            
-            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default" >Cancelar</MudButton>
+
+            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancelar</MudButton>
 
             @if (ShowMode)
             {
@@ -57,7 +73,7 @@
                 <MudButton OnClick="ChangeToEditMode" Variant="Variant.Filled" Color="Color.Warning">Editar</MudButton>
                 <MudButton OnClick="Delete" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
             }
-       </MudForm>
+        </MudForm>
     </MudCardContent>
 </MudCard>
 
@@ -81,7 +97,7 @@
     public bool DeleteMode { get; set; }
 
     [Parameter]
-    public bool ShowMode { get;  set; }
+    public bool ShowMode { get; set; }
 
     private bool success = false;
 
@@ -164,7 +180,7 @@
     }
     private void ChangeToDeleteMode()
     {
-        EditMode = false; 
+        EditMode = false;
         DeleteMode = true;
         ShowMode = false;
         UpdateCardHeader();
