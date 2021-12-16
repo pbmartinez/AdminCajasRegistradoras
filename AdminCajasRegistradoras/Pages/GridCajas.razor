@@ -62,10 +62,10 @@
                         <MudMenuItem>Tasa</MudMenuItem>
                     </MudMenu>
                     <MudTooltip Text="Editar">
-                        <MudFab @onclick="@(()=>Edit(context.Id))" Color=Color.Primary Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
+                        <MudFab @onclick="@(()=>Edit(context.Id))" Color=Color.Warning Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
                     </MudTooltip>
                     <MudTooltip Text="Eliminar">
-                        <MudFab @onclick="@(()=>Show(context.Id, context.Nombre))" Color=Color.Secondary Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
+                        <MudFab @onclick="@(()=>Show(context.Id, context.Nombre))" Color=Color.Error Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
                     </MudTooltip>
                 </MudTd>
             </RowTemplate>

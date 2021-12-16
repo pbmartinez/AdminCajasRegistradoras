@@ -1,0 +1,166 @@
+﻿@page "/encabezados"
+
+@using AdminCajasRegistradoras.Models
+@using AdminCajasRegistradoras.DataAnnotations
+@using System.ComponentModel.DataAnnotations
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+
+<MudText Typo="Typo.h3" GutterBottom="true">Configuraciones de Encabezados</MudText>
+<MudText Class="mb-8">This component shows a list of header settings.</MudText>
+
+
+<br />
+<MudCard Elevation="2">
+    @if (Configuraciones == null)
+    {
+        <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+    }
+    else
+    {
+
+        <MudTable Items="Configuraciones" Hover="true" SortLabel="Sort By" Elevation="0" Dense="true">
+            <ToolBarContent>                
+                <MudTooltip Text="Adicionar">
+                    <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.Add" Color=Color.Inherit></MudIconButton>
+                </MudTooltip>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.Nombre)">@ConfiguracionEncabezado.NombreName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.ClearLog)">@ConfiguracionEncabezado.ClearLogName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.EndFile)">@ConfiguracionEncabezado.EndFileName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.Abort)">@ConfiguracionEncabezado.AbortName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.Result)">@ConfiguracionEncabezado.ResultName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.BaudRate)">@ConfiguracionEncabezado.BaudRateName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.Puerto)">@ConfiguracionEncabezado.PuertoName</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<ConfiguracionEncabezado, object>(x=>x.Activa)">@ConfiguracionEncabezado.ActivaName</MudTableSortLabel></MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="@ConfiguracionEncabezado.NombreName">@context.Nombre</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.ClearLogName">@context.ClearLog</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.EndFileName">@context.EndFile</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.AbortName">@context.Abort</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.ResultName">@context.Result</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.BaudRateName">@context.BaudRate</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.PuertoName">@context.Puerto</MudTd>
+                <MudTd DataLabel="@ConfiguracionEncabezado.ActivaName">@(context.Activa ? "Si":"No")</MudTd>
+                <MudTd DataLabel="">
+                    <MudTooltip Text="Detalles">
+                        <MudFab @onclick="@(()=>Show(context))" Color=Color.Default Icon="@Icons.Material.Filled.Visibility" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
+                    <MudTooltip Text="Editar">
+                        <MudFab @onclick="@(()=>Edit(context))" Color=Color.Warning Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
+                    <MudTooltip Text="Eliminar">
+                        <MudFab @onclick="@(()=>Delete(context))" Color=Color.Error Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+            </PagerContent>
+        </MudTable>
+    }
+</MudCard>
+
+@code {
+    private bool visible = false;
+    private bool success = false;
+    private ConfiguracionEncabezado item = new ConfiguracionEncabezado();
+    private List<ConfiguracionEncabezado> Configuraciones;
+    private IDialogReference dialogReference;
+    private DialogOptions dialogOptions = new DialogOptions { CloseButton = true };
+
+    protected override void OnInitialized()
+    {
+        UpdateGrid();
+    }
+
+    private void UpdateGrid()
+    {
+        Configuraciones = db.Encabezados.ToList();
+        success = false;
+    }
+    private void OnCancelled()
+    {
+        dialogReference?.Close();
+    }
+    private void OnSuccessfullySave()
+    {
+        dialogReference?.Close();
+        UpdateGrid();
+        StateHasChanged();
+    }
+    private void OnSuccessfullyDeleted()
+    {
+        
+    }
+    
+    private DialogParameters SetParametersForShow()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
+        parameters.Add("OnSuccessfullyDeleted", () => OnSuccessfullyDeleted());
+        parameters.Add("OnCancelled", () => OnCancelled());
+        return parameters;
+    }
+    private void Show(ConfiguracionEncabezado pivot) 
+    {
+        var conf = db.Encabezados.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
+        {
+            Snackbar.Add($"El item que desea mostrar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
+        }
+        else
+        {
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("ShowMode", true);
+            dialogReference = Dialog.Show<ShowConfiguracionEncabezado>("",parameters, dialogOptions);
+        }
+    }
+    private void Add()
+    {
+        var parameters = SetParametersForShow();
+        parameters.Add("item", new ConfiguracionEncabezado());
+        parameters.Add("EditMode", true);
+        dialogReference = Dialog.Show<ShowConfiguracionEncabezado>("",parameters,dialogOptions);
+    }
+    private void Edit(ConfiguracionEncabezado pivot)
+    {
+        var conf = db.Encabezados.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
+        {
+            Snackbar.Add($"El item que desea editar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
+        }
+        else
+        {
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("EditMode", true);
+            dialogReference = Dialog.Show<ShowConfiguracionEncabezado>("",parameters,dialogOptions);            
+        }
+    }
+    private void Delete(ConfiguracionEncabezado pivot)
+    {
+        var conf = db.Encabezados.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
+        {
+            Snackbar.Add($"El item que desea eliminar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
+        }
+        else
+        {
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("DeleteMode", true);
+            dialogReference = Dialog.Show<ShowConfiguracionEncabezado>("",parameters,dialogOptions);            
+        }
+    }
+}

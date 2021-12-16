@@ -1,0 +1,172 @@
+﻿@using AdminCajasRegistradoras.Models
+
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+@inject ISnackbar Snackbar
+
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@CardHeader</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @bind-IsValid="@success">
+            <MudTextField @bind-Value=item.Nombre Disabled=(!EditMode) Label="@ConfiguracionEncabezado.NombreName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.NombreName} ...")"
+                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.NombreName} es requerido")">
+            </MudTextField>
+            <MudNumericField @bind-Value=item.ClearLog Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ClearLogName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ClearLogName} ...")"
+                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.ClearLogName} es requerido")">
+            </MudNumericField>
+
+            <MudNumericField @bind-Value=item.EndFile Disabled=(!EditMode) Label="@ConfiguracionEncabezado.EndFileName" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.EndFileName} ...")" 
+                             Required="true" RequiredError="@($"{ConfiguracionEncabezado.EndFileName} es requerido")">
+            </MudNumericField>
+
+            <MudNumericField @bind-Value=item.Abort Disabled=(!EditMode) Label="@ConfiguracionEncabezado.AbortName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.AbortName} ...")"
+                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.AbortName} es requerido")">
+            </MudNumericField>
+
+            <MudNumericField @bind-Value=item.Result Disabled=(!EditMode) Label="@ConfiguracionEncabezado.ResultName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")"
+                          Required="true" RequiredError="@($"{ConfiguracionEncabezado.ResultName} es requerido")">
+            </MudNumericField>
+                        
+            <MudNumericField @bind-Value=item.BaudRate Disabled=(!EditMode) Label="@ConfiguracionEncabezado.BaudRateName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.ResultName} ...")">
+            </MudNumericField>
+                        
+            <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@ConfiguracionEncabezado.PuertoName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{ConfiguracionEncabezado.PuertoName} ...")">
+            </MudNumericField>
+
+            <MudSwitch @bind-Checked="@item.Activa" Disabled=(!EditMode) Label="Activa" Color=Color.Info></MudSwitch>
+
+            <br />
+            
+            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default" >Cancelar</MudButton>
+
+            @if (ShowMode)
+            {
+                <MudButton OnClick="ChangeToEditMode" Variant="Variant.Filled" Color="Color.Warning">Editar</MudButton>
+                <MudButton OnClick="ChangeToDeleteMode" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+            @if (EditMode)
+            {
+                <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Success" Disabled="@(!success)">Salvar</MudButton>
+                <MudButton OnClick="ChangeToDeleteMode" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+            @if (DeleteMode)
+            {
+                <MudButton OnClick="ChangeToEditMode" Variant="Variant.Filled" Color="Color.Warning">Editar</MudButton>
+                <MudButton OnClick="Delete" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+       </MudForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public ConfiguracionEncabezado item { get; set; }
+
+    [Parameter]
+    public Action OnSuccessfullySave { get; set; }
+
+    [Parameter]
+    public Action OnSuccessfullyDeleted { get; set; }
+
+    [Parameter]
+    public Action OnCancelled { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; }
+
+    [Parameter]
+    public bool DeleteMode { get; set; }
+
+    [Parameter]
+    public bool ShowMode { get;  set; }
+
+    private bool success = false;
+
+    private string CardHeader = string.Empty;
+    private void UpdateCardHeader()
+    {
+        if (EditMode)
+            CardHeader = "Adicionar / Editar encabezado";
+        else if (DeleteMode)
+            CardHeader = "Esta seguro que desea eliminar el encabezado seleccionado";
+        else
+            CardHeader = "Detalles de encabezado";
+    }
+
+    protected override void OnInitialized()
+    {
+        UpdateCardHeader();
+    }
+    private void Cancel()
+    {
+        OnCancelled.Invoke();
+    }
+    private void Delete()
+    {
+        if (item == null || item.Id == null || item.Id == Guid.Empty)
+        {
+            Snackbar.Add("La configuracion que intenta borrar es null", Severity.Warning);
+        }
+        else
+        {
+            var configuracion = db.Encabezados.FirstOrDefault(a => a.Id == item.Id);
+            if (configuracion == null)
+            {
+                Snackbar.Add("La configuracion que intenta borrar es null", Severity.Warning);
+            }
+            else
+            {
+                db.Encabezados.Remove(configuracion);
+                db.SaveChanges();
+                Snackbar.Add("La configuración ha sido eliminada satisfactoriamente", Severity.Success);
+                OnSuccessfullyDeleted.Invoke();
+            }
+        }
+    }
+    private void Save()
+    {
+        if (item.Id == Guid.Empty) //Crear
+        {
+            item.Id = Guid.NewGuid();
+            db.Encabezados.Add(item);
+            db.SaveChanges();
+            Snackbar.Add($"La configuración ha sido adicionada satisfactoriamente", Severity.Success);
+            item = new ConfiguracionEncabezado();
+            OnSuccessfullySave.Invoke();
+        }
+        else if (item.Id != Guid.Empty) //Editar
+        {
+            var configuracion = db.Encabezados.FirstOrDefault(c => c.Id == item.Id);
+            if (configuracion == null)
+            {
+                Snackbar.Add($"La configuración con id {item.Id} que intenta editar no existe", Severity.Warning);
+            }
+            else
+            {
+                configuracion = item;
+                db.SaveChanges();
+                item = new ConfiguracionEncabezado();
+                Snackbar.Add($"La configuración ha sido editada satisfactoriamente", Severity.Success);
+                OnSuccessfullySave.Invoke();
+            }
+        }
+    }
+
+    private void ChangeToEditMode()
+    {
+        EditMode = true;
+        DeleteMode = false;
+        ShowMode = false;
+        UpdateCardHeader();
+    }
+    private void ChangeToDeleteMode()
+    {
+        EditMode = false; 
+        DeleteMode = true;
+        ShowMode = false;
+        UpdateCardHeader();
+    }
+}
