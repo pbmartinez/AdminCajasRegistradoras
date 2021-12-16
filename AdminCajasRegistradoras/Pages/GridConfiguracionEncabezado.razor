@@ -97,7 +97,9 @@
     }
     private void OnSuccessfullyDeleted()
     {
-        
+        dialogReference?.Close();
+        UpdateGrid();
+        StateHasChanged();
     }
     
     private DialogParameters SetParametersForShow()
