@@ -9,7 +9,7 @@
 
 
 <MudText Typo="Typo.h3" GutterBottom="true">Cajas Registradoras</MudText>
-<MudText Class="mb-8">This component shows a list of registered boxes.</MudText>
+<MudText Class="mb-8">Listado de las cajas registradoras</MudText>
 
 
 <br />
@@ -20,21 +20,17 @@
     }
     else
     {
-
         <MudTable Items="Cajas" Hover="true" SortLabel="Sort By" Elevation="0" MultiSelection="true" Dense="true"
               Filter="new Func<Caja,bool>(FilterFunc1)">
             <ToolBarContent>
-                <MudTooltip Text="Adicionar lista de excel">
-                    <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.AddBox" Color=Color.Inherit></MudIconButton>
-                </MudTooltip>
                 <MudTooltip Text="Adicionar">
                     <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.Add" Color=Color.Inherit></MudIconButton>
                 </MudTooltip>
                 <MudSpacer />
                 <MudTextField @bind-Value="searchString" Placeholder="Buscar ..."
-                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
-                          Class="mt-0"></MudTextField>
-
+                    Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium"
+                    Class="mt-0">
+                </MudTextField>
             </ToolBarContent>
             <HeaderContent>
                 <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Caja, object>(x=>x.Nombre)">Nombre</MudTableSortLabel></MudTh>
@@ -61,11 +57,14 @@
                         <MudMenuItem>Modificadores</MudMenuItem>
                         <MudMenuItem>Tasa</MudMenuItem>
                     </MudMenu>
+                    <MudTooltip Text="Detalles">
+                        <MudFab @onclick="@(()=>Show(context))" Color=Color.Default Icon="@Icons.Material.Filled.Visibility" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
                     <MudTooltip Text="Editar">
-                        <MudFab @onclick="@(()=>Edit(context.Id))" Color=Color.Warning Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
+                        <MudFab @onclick="@(()=>Edit(context))" Color=Color.Warning Icon="@Icons.Material.Filled.Edit" Size=Size.Medium> </MudFab>
                     </MudTooltip>
                     <MudTooltip Text="Eliminar">
-                        <MudFab @onclick="@(()=>Show(context.Id, context.Nombre))" Color=Color.Error Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
+                        <MudFab @onclick="@(()=>Delete(context))" Color=Color.Error Icon="@Icons.Material.Filled.Delete" Size=Size.Medium> </MudFab>
                     </MudTooltip>
                 </MudTd>
             </RowTemplate>
@@ -77,96 +76,100 @@
     }
 </MudCard>
 
-<MudDialog @bind-IsVisible="visible" >
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Class="mr-3"/> Eliminar caja
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        <p>@($"Está seguro que quiere eliminar la caja {nombreCajaToRemove} ?")</p>        
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Cancel" Class="px-10">Cancelar</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="()=>Delete(idToRemove)" Class="px-10">Eliminar</MudButton>
-    </DialogActions>
-</MudDialog>
 
 
 @code {
-    private bool visible = false;
-    private bool success = false;
-    private Guid idToRemove = Guid.Empty;
-    private string nombreCajaToRemove = string.Empty;
     private Caja cajaToSave = new Caja();
     private List<Caja> Cajas;
     private IDialogReference dialogReference;
     private string searchString;
-    private void UpdateCajas()
+    private DialogOptions dialogOptions = new DialogOptions { CloseButton = true};
+    protected override void OnInitialized()
+    {
+        UpdateGrid();
+    }
+    private void UpdateGrid()
     {
         Cajas = db.Cajas.ToList();
-        success = false;
+    }
+    private void OnCancelled()
+    {
+        dialogReference?.Close();
     }
     private void OnSuccessfullySave()
     {
-        if (dialogReference != null)
-            dialogReference.Close();
-        UpdateCajas();
+        dialogReference?.Close();
+        UpdateGrid();
         StateHasChanged();
     }
-    protected override void OnInitialized()
+    private void OnSuccessfullyDeleted()
     {
-        UpdateCajas();
+        dialogReference?.Close();
+        UpdateGrid();
+        StateHasChanged();
     }
-    void Cancel() 
+
+    private DialogParameters SetParametersForShow()
     {
-        idToRemove = Guid.Empty;
-        nombreCajaToRemove = string.Empty;
-        visible = false; 
+        var parameters = new DialogParameters();
+        parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
+        parameters.Add("OnSuccessfullyDeleted", () => OnSuccessfullyDeleted());
+        parameters.Add("OnCancelled", () => OnCancelled());
+        return parameters;
     }
-    void Show(Guid id, string name) 
+    private void Show(Caja pivot) 
     {
-        idToRemove = id; 
-        visible = true;
-        nombreCajaToRemove = name;
+        var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
+        {
+            Snackbar.Add($"El item que desea mostrar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
+        }
+        else
+        {
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("ShowMode", true);
+            dialogReference = Dialog.Show<ShowCaja>("",parameters, dialogOptions);
+        }
     }
     private void Add()
     {
-        var parameters = new DialogParameters();
-        parameters.Add("cajaToSave", new Caja());
-        parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
-        dialogReference = Dialog.Show<AddModifyCajas>("Adicionar Caja", parameters);
+        var parameters = SetParametersForShow();
+        parameters.Add("item", new Caja());
+        parameters.Add("EditMode", true);
+        dialogReference = Dialog.Show<ShowCaja>("",parameters,dialogOptions);
     }
-    private void Edit(Guid id)
+    private void Edit(Caja pivot)
     {
-        var caja = db.Cajas.FirstOrDefault(c => c.Id == id);
-        if (caja == null)
+        var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
         {
-            Snackbar.Add($"La caja con id {id} que intenta editar no existe", Severity.Warning);
+            Snackbar.Add($"El item que desea editar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
         }
         else
         {
-            cajaToSave = caja;
-            var parameters = new DialogParameters();
-            parameters.Add("cajaToSave", cajaToSave);
-            parameters.Add("OnSuccessfullySave", () => OnSuccessfullySave());
-            dialogReference = Dialog.Show<AddModifyCajas>("Editar Caja", parameters);
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("EditMode", true);
+            dialogReference = Dialog.Show<ShowCaja>("", parameters, dialogOptions);        
         }
     }
-    private void Delete(Guid id)
+    private void Delete(Caja pivot)
     {
-        var caja = db.Cajas.FirstOrDefault(c => c.Id == id);
-        if (caja == null)
+        var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
+        if (conf == null)
         {
-            Snackbar.Add($"La caja con id {id} que intenta editar no existe", Severity.Warning);
+            Snackbar.Add($"El item que desea eliminar con id {pivot.Id} no existe", Severity.Warning);
+            UpdateGrid();
         }
         else
         {
-            db.Cajas.Remove(caja);
-            db.SaveChanges();
-            UpdateCajas();
-            Snackbar.Add($"La caja ha sido eliminada satisfactoriamente", Severity.Success);
-            Cancel();
+            var parameters = SetParametersForShow();
+            parameters.Add("item", conf);
+            parameters.Add("DeleteMode", true);
+            dialogReference = Dialog.Show<ShowCaja>("",parameters,dialogOptions);            
         }
     }
 

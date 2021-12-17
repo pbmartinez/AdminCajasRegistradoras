@@ -1,0 +1,227 @@
+﻿@using AdminCajasRegistradoras.Models
+@using AdminCajasRegistradoras.DataAnnotations
+
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+@inject ISnackbar Snackbar
+
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@CardHeader</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @bind-IsValid="@success">
+            <MudGrid>
+
+                <MudItem xs="6" sm="4">
+                    <MudTextField @bind-Value=item.Nombre Disabled=(!EditMode) Label="@Caja.NombreName" Margin="Margin.Normal" Placeholder="@($"{Caja.NombreName} ...")"
+                                  Required="true" RequiredError="@($"{Caja.NombreName} es requerido")">
+                    </MudTextField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Numero Disabled=(!EditMode) Label="@Caja.NumeroName" Margin="Margin.Normal" Placeholder="@($"{Caja.NumeroName} ...")"
+                                  Required="true" RequiredError="@($"{Caja.NumeroName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudTextField @bind-Value=item.Ip Disabled=(!EditMode) Label="@Caja.IpName" Margin="Margin.Normal" Placeholder="@($"{Caja.IpName} ...")"
+                                  Validation="@(new IpAddressAttribute(){ErrorMessage="La dirección ip no es válida"})">
+                    </MudTextField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@Caja.PuertoName" Margin="Margin.Normal" Placeholder="@($"{Caja.PuertoName} ...")"
+                                  Required="true" RequiredError="@($"{Caja.PuertoName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Visible Disabled=(!EditMode) Label="@Caja.VisibleName" Margin="Margin.Normal" Placeholder="@($"{Caja.VisibleName} ...")"
+                                     Required="true" RequiredError="@($"{Caja.VisibleName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.ClearLog Disabled=(!EditMode) Label="@Caja.ClearLogName" Margin="Margin.Normal" Placeholder="@($"{Caja.ClearLogName} ...")"
+                                     Required="true" RequiredError="@($"{Caja.ClearLogName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.EndFile Disabled=(!EditMode) Label="@Caja.EndFileName" Margin="Margin.Normal" Placeholder="@($"{Caja.EndFileName} ...")"
+                                     Required="true" RequiredError="@($"{Caja.EndFileName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Abort Disabled=(!EditMode) Label="@Caja.AbortName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.AbortName} ...")"
+                                     Required="true" RequiredError="@($"{Caja.AbortName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Result Disabled=(!EditMode) Label="@Caja.ResultName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.ResultName} ...")"
+                                     Required="true" RequiredError="@($"{Caja.ResultName} es requerido")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.BaudRate Disabled=(!EditMode) Label="@Caja.BaudRateName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.ResultName} ...")">
+                    </MudNumericField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@Caja.PuertoName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.PuertoName} ...")">
+                    </MudNumericField>
+                </MudItem>
+                
+            </MudGrid>
+            <br />
+
+            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancelar</MudButton>
+            
+
+            @if (ShowMode)
+            {
+                <MudButton OnClick="ChangeToEditMode" Variant="Variant.Filled" Color="Color.Warning">Editar</MudButton>
+                <MudButton OnClick="ChangeToDeleteMode" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+            @if (EditMode)
+            {
+                <MudButton OnClick="ChangeToShowMode" Variant="Variant.Filled" Color="Color.Default">Detalles</MudButton>
+                <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Success" Disabled="@(!success)">Salvar</MudButton>
+                <MudButton OnClick="ChangeToDeleteMode" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+            @if (DeleteMode)
+            {
+                <MudButton OnClick="ChangeToShowMode" Variant="Variant.Filled" Color="Color.Default">Detalles</MudButton>
+                <MudButton OnClick="ChangeToEditMode" Variant="Variant.Filled" Color="Color.Warning">Editar</MudButton>
+                <MudButton OnClick="Delete" Variant="Variant.Filled" Color="Color.Error">Eliminar</MudButton>
+            }
+        </MudForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Caja item { get; set; }
+
+    [Parameter]
+    public Action OnSuccessfullySave { get; set; }
+
+    [Parameter]
+    public Action OnSuccessfullyDeleted { get; set; }
+
+    [Parameter]
+    public Action OnCancelled { get; set; }
+
+    [Parameter]
+    public bool EditMode { get; set; }
+
+    [Parameter]
+    public bool DeleteMode { get; set; }
+
+    [Parameter]
+    public bool ShowMode { get; set; }
+
+    private bool success = false;
+
+    private string CardHeader = string.Empty;
+    private void UpdateCardHeader()
+    {
+        if (EditMode)
+            CardHeader = "Adicionar / Editar";
+        else if (DeleteMode)
+            CardHeader = "Esta seguro que desea eliminar ?";
+        else
+            CardHeader = "Detalles";
+    }
+    
+    
+    protected override void OnParametersSet()
+    {
+        var justOneFlag = ShowMode ^ DeleteMode ^ EditMode;
+        if (!justOneFlag)
+            throw new ArgumentException("Must been provided just one mode and only one mode. "
+                                      + "Either ShowMode, EditMode or DeleteMode.");
+    }
+    private void Cancel()
+    {
+        OnCancelled.Invoke();
+    }
+    private void Delete()
+    {
+        if (item == null || item.Id == null || item.Id == Guid.Empty)
+        {
+            Snackbar.Add($"La caja que intenta borrar es null", Severity.Warning);
+        }
+        else
+        {
+            var configuracion = db.Cajas.FirstOrDefault(a => a.Id == item.Id);
+            if (configuracion == null)
+            {
+                Snackbar.Add("La caja que intenta borrar es null", Severity.Warning);
+            }
+            else
+            {
+                db.Cajas.Remove(configuracion);
+                db.SaveChanges();
+                Snackbar.Add("La caja ha sido eliminada satisfactoriamente", Severity.Success);
+                OnSuccessfullyDeleted.Invoke();
+            }
+        }
+    }
+    private void Save()
+    {
+        if (item.Id == Guid.Empty) //Crear
+        {
+            item.Id = Guid.NewGuid();
+            db.Cajas.Add(item);
+            db.SaveChanges();
+            Snackbar.Add($"La caja ha sido adicionada satisfactoriamente", Severity.Success);
+            item = new Caja();
+            OnSuccessfullySave.Invoke();
+        }
+        else if (item.Id != Guid.Empty) //Editar
+        {
+            var configuracion = db.Cajas.FirstOrDefault(c => c.Id == item.Id);
+            if (configuracion == null)
+            {
+                Snackbar.Add($"La caja con id {item.Id} que intenta editar no existe", Severity.Warning);
+            }
+            else
+            {
+                configuracion = item;
+                db.SaveChanges();
+                item = new Caja();
+                Snackbar.Add($"La caja ha sido editada satisfactoriamente", Severity.Success);
+                OnSuccessfullySave.Invoke();
+            }
+        }
+    }
+    private void ChangeToEditMode()
+    {
+        EditMode = true;
+        DeleteMode = false;
+        ShowMode = false;
+        UpdateCardHeader();
+    }
+    private void ChangeToDeleteMode()
+    {
+        EditMode = false;
+        DeleteMode = true;
+        ShowMode = false;
+        UpdateCardHeader();
+    }
+    private void ChangeToShowMode()
+    {
+        EditMode = false;
+        DeleteMode = false;
+        ShowMode = true;
+        UpdateCardHeader();
+    }
+
+}
