@@ -1,4 +1,4 @@
-﻿@page "/cajas"
+﻿@page "/configuraciones"
 
 @using AdminCajasRegistradoras.Models
 @using AdminCajasRegistradoras.DataAnnotations
@@ -8,20 +8,20 @@
 @inject IDialogService Dialog
 
 
-<MudText Typo="Typo.h3" GutterBottom="true">Cajas Registradoras</MudText>
-<MudText Class="mb-8">Listado de las cajas registradoras</MudText>
+<MudText Typo="Typo.h3" GutterBottom="true">Configuraciones</MudText>
+<MudText Class="mb-8">Listado de Configuraciones</MudText>
 
 
 <br />
 <MudCard Elevation="2">
-    @if (Cajas == null)
+    @if (Configuraciones == null)
     {
         <MudProgressCircular Color="Color.Default" Indeterminate="true" />
     }
     else
     {
-        <MudTable Items="Cajas" Hover="true" SortLabel="Sort By" Elevation="0" MultiSelection="true" Dense="true"
-              Filter="new Func<Caja,bool>(FilterFunc1)">
+        <MudTable Items="Configuraciones" Hover="true" SortLabel="Sort By" Elevation="0" MultiSelection="true" Dense="true"
+              Filter="new Func<Configuracion,bool>(FilterFunc1)">
             <ToolBarContent>
                 <MudTooltip Text="Adicionar">
                     <MudIconButton @onclick="Add" Icon="@Icons.Material.Filled.Add" Color=Color.Inherit></MudIconButton>
@@ -33,30 +33,14 @@
                 </MudTextField>
             </ToolBarContent>
             <HeaderContent>
-                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Caja, object>(x=>x.Nombre)">Nombre</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Numero)">Numero</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Ip)">Ip</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortBy="new Func<Caja, object>(x=>x.Puerto)">Puerto</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Configuracion, object>(x=>x.Activa)">Activa</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<Configuracion, object>(x=>x.Header)">Header</MudTableSortLabel></MudTh>
                 <MudTh>Acciones</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
-                <MudTd DataLabel="Numero">@context.Numero</MudTd>
-                <MudTd DataLabel="Ip">@context.Ip</MudTd>
-                <MudTd DataLabel="Puerto">@context.Puerto</MudTd>
-                <MudTd DataLabel="">
-                    <MudMenu Label="Lectura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
-                        <MudMenuItem>Cajero</MudMenuItem>
-                        <MudMenuItem>PLUS</MudMenuItem>
-                        <MudMenuItem>Modificadores</MudMenuItem>
-                        <MudMenuItem>Tasa</MudMenuItem>
-                    </MudMenu>
-                    <MudMenu Label="Escritura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
-                        <MudMenuItem>Cajero</MudMenuItem>
-                        <MudMenuItem>PLUS</MudMenuItem>
-                        <MudMenuItem>Modificadores</MudMenuItem>
-                        <MudMenuItem>Tasa</MudMenuItem>
-                    </MudMenu>
+                <MudTd DataLabel="Activa">@(@context.Activa ? "Si":"No")</MudTd>
+                <MudTd DataLabel="Header">@context.Header</MudTd>
+                <MudTd DataLabel="">                    
                     <MudTooltip Text="Detalles">
                         <MudFab @onclick="@(()=>Show(context))" Color=Color.Default Icon="@Icons.Material.Filled.Visibility" Size=Size.Medium> </MudFab>
                     </MudTooltip>
@@ -79,8 +63,8 @@
 
 
 @code {
-    private Caja cajaToSave = new Caja();
-    private List<Caja> Cajas;
+    
+    private List<Configuracion> Configuraciones;
     private IDialogReference dialogReference;
     private string searchString;
     private DialogOptions dialogOptions = new DialogOptions { CloseButton = true};
@@ -90,7 +74,7 @@
     }
     private void UpdateGrid()
     {
-        Cajas = db.Cajas.ToList();
+        Configuraciones = db.Configuraciones.ToList();
     }
     private void OnCancelled()
     {
@@ -117,9 +101,9 @@
         parameters.Add("OnCancelled", () => OnCancelled());
         return parameters;
     }
-    private void Show(Caja pivot) 
+    private void Show(Configuracion pivot) 
     {
-        var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
+        var conf = db.Configuraciones.FirstOrDefault(a => a.Id == pivot.Id);
         if (conf == null)
         {
             Snackbar.Add($"El item que desea mostrar con id {pivot.Id} no existe", Severity.Warning);
@@ -130,19 +114,19 @@
             var parameters = SetParametersForShow();
             parameters.Add("item", conf);
             parameters.Add("ShowMode", true);
-            dialogReference = Dialog.Show<ShowCaja>("",parameters, dialogOptions);
+            dialogReference = Dialog.Show<ShowConfiguracion>("",parameters, dialogOptions);
         }
     }
     private void Add()
     {
         var parameters = SetParametersForShow();
-        parameters.Add("item", new Caja());
+        parameters.Add("item", new Configuracion());
         parameters.Add("EditMode", true);
-        dialogReference = Dialog.Show<ShowCaja>("",parameters,dialogOptions);
+        dialogReference = Dialog.Show<ShowConfiguracion>("",parameters,dialogOptions);
     }
-    private void Edit(Caja pivot)
+    private void Edit(Configuracion pivot)
     {
-        var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
+        var conf = db.Configuraciones.FirstOrDefault(a => a.Id == pivot.Id);
         if (conf == null)
         {
             Snackbar.Add($"El item que desea editar con id {pivot.Id} no existe", Severity.Warning);
@@ -153,10 +137,10 @@
             var parameters = SetParametersForShow();
             parameters.Add("item", conf);
             parameters.Add("EditMode", true);
-            dialogReference = Dialog.Show<ShowCaja>("", parameters, dialogOptions);        
+            dialogReference = Dialog.Show<ShowConfiguracion>("", parameters, dialogOptions);        
         }
     }
-    private void Delete(Caja pivot)
+    private void Delete(Configuracion pivot)
     {
         var conf = db.Cajas.FirstOrDefault(a => a.Id == pivot.Id);
         if (conf == null)
@@ -169,26 +153,19 @@
             var parameters = SetParametersForShow();
             parameters.Add("item", conf);
             parameters.Add("DeleteMode", true);
-            dialogReference = Dialog.Show<ShowCaja>("",parameters,dialogOptions);            
+            dialogReference = Dialog.Show<ShowConfiguracion>("",parameters,dialogOptions);            
         }
     }
 
-    private bool FilterFunc1(Caja item) => FilterFunc(item, searchString);
+    private bool FilterFunc1(Configuracion item) => FilterFunc(item, searchString);
 
-    private bool FilterFunc(Caja item, string searchString)
+    private bool FilterFunc(Configuracion item, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString) || string.IsNullOrEmpty(searchString))
             return true;
-        if (item.Nombre.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        if (item.Header.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
-        if ((item.Numero + "").Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if (item.Ip != null && item.Ip.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if ((item.Puerto + "").Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
-        if ($"{item.Nombre} {item.Numero} {item.Ip} {item.Puerto}".Contains(searchString))
-            return true;
+        
         return false;
     }
 }

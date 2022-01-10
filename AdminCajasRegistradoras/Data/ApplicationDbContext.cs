@@ -12,5 +12,6 @@ namespace AdminCajasRegistradoras.Data
         }
 
         public DbSet<Caja> Cajas { get; set; } 
+        public DbSet<Configuracion> Configuraciones { get; set; }   
     }
 }

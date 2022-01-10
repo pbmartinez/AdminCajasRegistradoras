@@ -19,27 +19,32 @@ namespace AdminCajasRegistradoras.Models
         public string? Ip { get; set; } = string.Empty;
         public const string IpName = "Direccion Ip";
 
-        [Range(1,99999)]
+        [Range(1,9999)]
         public int? Puerto { get; set; }
         public const string PuertoName = "Puerto";
 
-        public int Visible { get; set; }
-        public const string VisibleName = "VISIBLE";
+        //public int Visible { get; set; }
+        //public const string VisibleName = "VISIBLE";
 
-        public int ClearLog { get; set; }
-        public const string ClearLogName = "CLEARLOG";
+        //public int ClearLog { get; set; }
+        //public const string ClearLogName = "CLEARLOG";
 
-        public int EndFile { get; set; }
-        public const string EndFileName = "ENDFILE";
+        //public int EndFile { get; set; }
+        //public const string EndFileName = "ENDFILE";
 
-        public int Abort { get; set; }
-        public const string AbortName = "ABORT";
+        //public int Abort { get; set; }
+        //public const string AbortName = "ABORT";
 
-        public int Result { get; set; }
-        public const string ResultName = "RESULT";
+        //public int Result { get; set; }
+        //public const string ResultName = "RESULT";
 
         public int? BaudRate { get; set; }
         public const string BaudRateName = "BAUDRATE";
+
+        public int Register { get; set; }
+        public const string RegisterName = "REGISTER";
+
+
 
         public Caja()
         {
@@ -49,12 +54,13 @@ namespace AdminCajasRegistradoras.Models
             Ip = string.Empty;
             Puerto = null;
 
-            Visible = 1;
-            ClearLog = 1;
-            EndFile = 1;
-            Abort = 1;
-            Result = 1;
+            //Visible = 1;
+            //ClearLog = 1;
+            //EndFile = 1;
+            //Abort = 1;
+            //Result = 1;
             BaudRate = null;
+            Register = 0;
         }
 
         public Caja(Guid id,
@@ -62,24 +68,26 @@ namespace AdminCajasRegistradoras.Models
                     int? numero,
                     string? ip,
                     int? puerto,
-                    int visible,
-                    int clearLog,
-                    int endFile,
-                    int abort,
-                    int result,
-                    int? baudRate)
+                    //int visible,
+                    //int clearLog,
+                    //int endFile,
+                    //int abort,
+                    //int result,
+                    int? baudRate,
+                    int register)
         {
             Id = id;
             Nombre = nombre;
             Numero = numero;
             Ip = ip;
             Puerto = puerto;
-            Visible = visible;
-            ClearLog = clearLog;
-            EndFile = endFile;
-            Abort = abort;
-            Result = result;
-            BaudRate = baudRate;
+            //Visible = visible;
+            //ClearLog = clearLog;
+            //EndFile = endFile;
+            //Abort = abort;
+            //Result = result;
+            BaudRate = baudRate;       
+            Register = register;
         }
     }
 }

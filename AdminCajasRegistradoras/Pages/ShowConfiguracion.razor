@@ -13,40 +13,15 @@
     <MudCardContent>
         <MudForm @bind-IsValid="@success">
             <MudGrid>
-
-                <MudItem xs="6" sm="4">
-                    <MudTextField @bind-Value=item.Nombre Disabled=(!EditMode) Label="@Caja.NombreName" Margin="Margin.Normal" Placeholder="@($"{Caja.NombreName} ...")"
-                                  Required="true" RequiredError="@($"{Caja.NombreName} es requerido")">
+                <MudItem xs="12" sm="12">
+                    <MudTextField @bind-Value=item.Header Disabled=(!EditMode) Label="@Configuracion.HeaderName" Margin="Margin.Normal" Placeholder="@($"{Configuracion.HeaderName} ...")"
+                                    Lines=6 Required="true" RequiredError="@($"{Configuracion.HeaderName} es requerido")">
                     </MudTextField>
                 </MudItem>
-
                 <MudItem xs="6" sm="4">
-                    <MudNumericField @bind-Value=item.Numero Disabled=(!EditMode) Label="@Caja.NumeroName" Margin="Margin.Normal" Placeholder="@($"{Caja.NumeroName} ...")"
-                                  Required="true" RequiredError="@($"{Caja.NumeroName} es requerido")">
-                    </MudNumericField>
-                </MudItem>
-
-                <MudItem xs="6" sm="4">
-                    <MudTextField @bind-Value=item.Ip Disabled=(!EditMode) Label="@Caja.IpName" Margin="Margin.Normal" Placeholder="@($"{Caja.IpName} ...")"
-                                  Validation="@(new IpAddressAttribute(){ErrorMessage="La dirección ip no es válida"})">
-                    </MudTextField>
-                </MudItem>
-
-                <MudItem xs="6" sm="4">
-                    <MudNumericField @bind-Value=item.Puerto Disabled=(!EditMode) Label="@Caja.PuertoName" Margin="Margin.Normal" Placeholder="@($"{Caja.PuertoName} ...")"
-                                  Required="true" RequiredError="@($"{Caja.PuertoName} es requerido")">
-                    </MudNumericField>
-                </MudItem>
-
-
-                <MudItem xs="6" sm="4">
-                    <MudNumericField @bind-Value=item.BaudRate Disabled=(!EditMode) Label="@Caja.BaudRateName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.BaudRateName} ...")">
-                    </MudNumericField>
-                </MudItem>
-
-                <MudItem xs="6" sm="4">
-                    <MudNumericField @bind-Value=item.Register Disabled=(!EditMode) Label="@Caja.RegisterName" Variant="Variant.Text" Margin="Margin.Normal" Placeholder="@($"{Caja.RegisterName} ...")">
-                    </MudNumericField>
+                    <MudSwitch @bind-Checked=item.Activa Disabled=(!EditMode) Label="@Configuracion.ActivaName" Color=Color.Info 
+                                     Required="true" RequiredError="@($"{Configuracion.ActivaName} es requerido")">
+                    </MudSwitch>
                 </MudItem>
                 
             </MudGrid>
@@ -79,7 +54,7 @@
 
 @code {
     [Parameter]
-    public Caja item { get; set; }
+    public Configuracion item { get; set; }
 
     [Parameter]
     public Action OnSuccessfullySave { get; set; }
@@ -128,20 +103,20 @@
     {
         if (item == null || item.Id == null || item.Id == Guid.Empty)
         {
-            Snackbar.Add($"La caja que intenta borrar es null", Severity.Warning);
+            Snackbar.Add($"El objeto que intenta borrar es null", Severity.Warning);
         }
         else
         {
-            var configuracion = db.Cajas.FirstOrDefault(a => a.Id == item.Id);
+            var configuracion = db.Configuraciones.FirstOrDefault(a => a.Id == item.Id);
             if (configuracion == null)
             {
-                Snackbar.Add("La caja que intenta borrar es null", Severity.Warning);
+                Snackbar.Add("El objeto que intenta borrar es null", Severity.Warning);
             }
             else
             {
-                db.Cajas.Remove(configuracion);
+                db.Configuraciones.Remove(configuracion);
                 db.SaveChanges();
-                Snackbar.Add("La caja ha sido eliminada satisfactoriamente", Severity.Success);
+                Snackbar.Add("El objeto ha sido eliminado satisfactoriamente", Severity.Success);
                 OnSuccessfullyDeleted.Invoke();
             }
         }
@@ -151,25 +126,25 @@
         if (item.Id == Guid.Empty) //Crear
         {
             item.Id = Guid.NewGuid();
-            db.Cajas.Add(item);
+            db.Configuraciones.Add(item);
             db.SaveChanges();
-            Snackbar.Add($"La caja ha sido adicionada satisfactoriamente", Severity.Success);
-            item = new Caja();
+            Snackbar.Add($"El objeto ha sido adicionado satisfactoriamente", Severity.Success);
+            item = new Configuracion();
             OnSuccessfullySave.Invoke();
         }
         else if (item.Id != Guid.Empty) //Editar
         {
-            var configuracion = db.Cajas.FirstOrDefault(c => c.Id == item.Id);
+            var configuracion = db.Configuraciones.FirstOrDefault(c => c.Id == item.Id);
             if (configuracion == null)
             {
-                Snackbar.Add($"La caja con id {item.Id} que intenta editar no existe", Severity.Warning);
+                Snackbar.Add($"El objeto con id {item.Id} que intenta editar no existe", Severity.Warning);
             }
             else
             {
                 configuracion = item;
                 db.SaveChanges();
-                item = new Caja();
-                Snackbar.Add($"La caja ha sido editada satisfactoriamente", Severity.Success);
+                item = new Configuracion();
+                Snackbar.Add($"El objeto ha sido editado satisfactoriamente", Severity.Success);
                 OnSuccessfullySave.Invoke();
             }
         }
