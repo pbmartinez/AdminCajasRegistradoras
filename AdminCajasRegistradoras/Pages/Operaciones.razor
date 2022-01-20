@@ -1,0 +1,159 @@
+﻿@page "/operaciones/{cajaId:guid}"
+@using AdminCajasRegistradoras.Models
+@using AdminCajasRegistradoras.DataAnnotations
+@using AdminCajasRegistradoras.Enums
+@using AdminCajasRegistradoras.Services
+
+@inject AdminCajasRegistradoras.Data.ApplicationDbContext db
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject IFileManager FileManager
+@inject IQdriverExeManager QdriverExeManager
+@inject IQdriverCommandManager QdriverCommandManager
+
+<MudCard Elevation="2">
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h6">@CardHeader</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudForm @bind-IsValid="@success">
+            <MudGrid>
+                <MudItem xs="12" sm="12">
+                    <MudTextField @bind-Value=configuracion.Header Label="@Configuracion.HeaderName" Margin="Margin.Normal" Placeholder="@($"{Configuracion.HeaderName} ...")"
+                                  Lines=6 Required="true" RequiredError="@($"{Configuracion.HeaderName} es requerido")">
+                    </MudTextField>
+                </MudItem>
+
+                <MudItem xs="6" sm="4">
+                    <MudSelect @bind-Value=Operacion T="EnumOperacion" Label="Operacion" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (EnumOperacion operacion in Enum.GetValues(typeof(EnumOperacion)))
+                        {
+                            <MudSelectItem Value="@(operacion)" />
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                @switch (Operacion)
+                {
+                    case EnumOperacion.Download:
+                        {
+                            <MudItem xs="6" sm="4">
+                                <MudSelect @bind-Value=DownloadCommand T="EnumQdriverDownloadCommand" Label="Comando" AnchorOrigin="Origin.BottomCenter">
+                                    @foreach (EnumQdriverDownloadCommand comando in Enum.GetValues(typeof(EnumQdriverDownloadCommand)))
+                                    {
+                                        <MudSelectItem Value="@(comando)" />
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            break;
+                        }
+
+                    case EnumOperacion.Upload:
+                        {
+                            <MudItem xs="6" sm="4">
+                                <InputFile id="fileInput112" OnChange="UploadFiles" hidden="hidden" accept=".txt, .csv" />
+
+                                <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Filled.CloudUpload"
+                               for="fileInput112">
+                                    Suba su archivo
+                                </MudButton>
+                            </MudItem>
+                            break;
+                        }
+                    default: break;
+                }
+
+
+
+                <MudItem xs="12" sm="12">
+                    @if (true)
+                    {
+                        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Default">Cancelar</MudButton>
+                        <MudButton OnClick="Procesar" Variant="Variant.Filled" Color="Color.Success">Procesar</MudButton>
+                    }
+                </MudItem>
+            </MudGrid>
+            <br />
+
+        </MudForm>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public Guid cajaId { get; set; }
+
+    private EnumOperacion Operacion;
+    private EnumQdriverDownloadCommand DownloadCommand;
+
+    private Configuracion configuracion = new Configuracion();
+
+    private Caja Caja;
+
+    private bool success = false;
+
+    private string CardHeader = "";
+    private void UploadFiles(InputFileChangeEventArgs e)
+    {
+        var entries = e.GetMultipleFiles();
+        //Do your validations here
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
+        Snackbar.Add($"Files with {entries.FirstOrDefault().Size} bytes size are not allowed", Severity.Error);
+        Snackbar.Add($"Files starting with letter {entries.FirstOrDefault().Name.Substring(0, 1)} are not recommended", Severity.Warning);
+        Snackbar.Add($"This file has the extension {entries.FirstOrDefault().Name.Split(".").Last()}", Severity.Info);
+
+        //TODO upload the files to the server
+    }
+    // Me quede aqui
+
+    protected override void OnInitialized()
+    {
+        configuracion = db.Configuraciones.FirstOrDefault(c => c.Activa);
+        Caja = db.Cajas.FirstOrDefault(c => c.Id == cajaId);
+        CardHeader = Caja == null ? "" : Caja.Nombre;
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo($"/cajas");
+    }
+    private async Task Procesar()
+    {
+
+        /*
+        * Procesamiento:
+        * 1. Configuracion.Header (Conexion).
+        * 2. Operacion (Download/Upload)
+        *      Si es download: fichero que se genera
+        *      Si es upload: fichero que se sube + Opciones de mantenimiento de registro
+        * 3. Crear el fichero txt con los comandos
+        * 4. Ejecutar el qdriver pasandole por parametro el fichero txt creado
+        */
+
+        switch (Operacion)
+        {
+            case EnumOperacion.Download:
+                {
+                    var comandos = await QdriverCommandManager.GenerateDownloadCommandsAsync(configuracion, Caja, DownloadCommand);
+                    await FileManager.GenerateCommandsFileAsync(comandos);
+                    await QdriverExeManager.ExecuteQdriverAsync();
+
+                    break;
+                }
+            case EnumOperacion.Upload:
+                {
+                    break;
+                }
+            default:
+                {
+                    Snackbar.Add("Debe seleccionar una operacion", Severity.Warning);
+                    break;
+                }
+        }
+    }
+}

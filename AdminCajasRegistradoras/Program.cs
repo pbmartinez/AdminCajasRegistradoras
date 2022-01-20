@@ -1,5 +1,6 @@
 using AdminCajasRegistradoras.Areas.Identity;
 using AdminCajasRegistradoras.Data;
+using AdminCajasRegistradoras.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,8 +21,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-
 builder.Services.AddMudServices();
+builder.Services.AddScoped<IFileManager, FileManager>();
+builder.Services.AddScoped<IQdriverExeManager, QdriverExeManager>();
+builder.Services.AddScoped<IQdriverCommandManager, QdriverCommandManager>();
 
 var app = builder.Build();
 

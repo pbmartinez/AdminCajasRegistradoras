@@ -6,6 +6,7 @@
 @inject AdminCajasRegistradoras.Data.ApplicationDbContext db
 @inject ISnackbar Snackbar
 @inject IDialogService Dialog
+@inject NavigationManager NavigationManager
 
 
 <MudText Typo="Typo.h3" GutterBottom="true">Cajas Registradoras</MudText>
@@ -44,19 +45,10 @@
                 <MudTd DataLabel="Numero">@context.Numero</MudTd>
                 <MudTd DataLabel="Ip">@context.Ip</MudTd>
                 <MudTd DataLabel="Puerto">@context.Puerto</MudTd>
-                <MudTd DataLabel="">
-                    <MudMenu Label="Lectura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
-                        <MudMenuItem>Cajero</MudMenuItem>
-                        <MudMenuItem>PLUS</MudMenuItem>
-                        <MudMenuItem>Modificadores</MudMenuItem>
-                        <MudMenuItem>Tasa</MudMenuItem>
-                    </MudMenu>
-                    <MudMenu Label="Escritura" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true">
-                        <MudMenuItem>Cajero</MudMenuItem>
-                        <MudMenuItem>PLUS</MudMenuItem>
-                        <MudMenuItem>Modificadores</MudMenuItem>
-                        <MudMenuItem>Tasa</MudMenuItem>
-                    </MudMenu>
+                <MudTd DataLabel="">                    
+                    <MudTooltip Text="Operaciones">
+                        <MudFab @onclick="@(()=>ShowOperation(context.Id))" Color=Color.Primary Icon="@Icons.Material.Filled.CallToAction" Size=Size.Medium> </MudFab>
+                    </MudTooltip>
                     <MudTooltip Text="Detalles">
                         <MudFab @onclick="@(()=>Show(context))" Color=Color.Default Icon="@Icons.Material.Filled.Visibility" Size=Size.Medium> </MudFab>
                     </MudTooltip>
@@ -116,6 +108,13 @@
         parameters.Add("OnSuccessfullyDeleted", () => OnSuccessfullyDeleted());
         parameters.Add("OnCancelled", () => OnCancelled());
         return parameters;
+    }
+    private void ShowOperation(Guid cajaId)
+    {
+        if (cajaId == null || cajaId == Guid.Empty)
+            Snackbar.Add("El id no es válido",Severity.Warning);
+        else
+            NavigationManager.NavigateTo($"/operaciones/{cajaId}");
     }
     private void Show(Caja pivot) 
     {
